@@ -1,0 +1,38 @@
+kind: HorizontalPodAutoscaler
+apiVersion: autoscaling/v2
+metadata:
+  name: tomcat-deployment-hpa
+  namespace: myserver
+spec:
+  scaleTargetRef: #定义目标资源
+    apiVersion: apps/v1 #目标资源API版本
+    kind: Deployment #目标资源类型为Deploymen
+    name: tomcat-deployment #目标资源名称
+  minReplicas: 1  #最小副本数
+  maxReplicas: 10 #最大副本数
+  behavior: #定义行为
+    scaleDown:  #缩容配置
+      stabilizationWindowSeconds: 30 #窗口稳定期，防止在此期间pod数量频繁波动
+      policies: #具体策略
+        - type: Percent #基于百分比进行pod调整
+          value: 100 #允许对当前pod数量的百分之百进行调整
+          periodSeconds: 15 #间隔时间为15s，每间隔15s允许对pod副本数量的百分之百调整，直到缩容到minReplicas
+    scaleUp: #扩容配置
+      stabilizationWindowSeconds: 0 #窗口稳定期，防止在此期间pod数量频繁波动
+      policies: #具体策略
+        - type: Percent
+          value: 100 #允许对当前pod数量的百分之百进行调整
+          periodSeconds: 15 #间隔时间为15s，每间隔15s允许对pod副本数量的百分之百调整，直到扩容到maxReplicas
+  metrics: #定义指标来源
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          averageUtilization: 20
+          type: Utilization
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          averageValue: 50Mi
+          type: AverageValue

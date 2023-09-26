@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: sample-httpserver
+  name: sample-httpserver
+  namespace: myserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-httpserver
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "3000"
+      labels:
+        app: sample-httpserver
+    spec:
+      containers:
+        - image: myserver-zzh-cn-north-1.jcr.service.jdcloud.com/httpserver-n-metrics:latest
+          imagePullPolicy: IfNotPresent
+          name: httpserver-n-metrics
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              memory: '100Mi'
+              cpu: 200m
+            limits:
+              cpu: 500m
+              memory: '300Mi'
